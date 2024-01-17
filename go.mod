@@ -1,4 +1,4 @@
-module github.com/mop-tracker/mop
+module mop-patched
 
 go 1.15
 
