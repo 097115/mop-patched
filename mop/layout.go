@@ -64,8 +64,6 @@ func NewLayout() *Layout {
 		{9, `Dividend`, `Dividend`, zero},
 		{9, `Yield`, `Yield`, percent},
 		{11, `MarketCap`, `MktCap`, currency},
-		{13, `PreOpen`, `PreMktChg%`, percent},
-		{13, `AfterHours`, `AfterMktChg%`, percent},
 	}
 	layout.regex = regexp.MustCompile(`(\.\d+)[TBMK]?$`)
 	layout.marketTemplate = buildMarketTemplate()
@@ -240,7 +238,7 @@ func buildQuotesTemplate() *template.Template {
 
 
 <header>{{.Header}}</>
-{{range.Stocks}}{{if eq .Direction 1}}<gain>{{else if eq .Direction -1}}<loss>{{end}}{{.Ticker}}{{.LastTrade}}{{.Change}}{{.ChangePct}}{{.Open}}{{.Low}}{{.High}}{{.Low52}}{{.High52}}{{.Volume}}{{.AvgVolume}}{{.PeRatio}}{{.Dividend}}{{.Yield}}{{.MarketCap}}{{.PreOpen}}{{.AfterHours}}</>
+{{range.Stocks}}{{if eq .Direction 1}}<gain>{{else if eq .Direction -1}}<loss>{{end}}{{.Ticker}}{{.LastTrade}}{{.Change}}{{.ChangePct}}{{.Open}}{{.Low}}{{.High}}{{.Low52}}{{.High52}}{{.Volume}}{{.AvgVolume}}{{.PeRatio}}{{.Dividend}}{{.Yield}}{{.MarketCap}}</>
 {{end}}`
 
 	return template.Must(template.New(`quotes`).Parse(markup))
