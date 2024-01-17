@@ -25,27 +25,31 @@ const noDataIndicator = `N/A`
 // Stock stores quote information for the particular stock ticker. The data
 // for all the fields except 'Direction' is fetched using Yahoo market API.
 type Stock struct {
-	Ticker     string `json:"symbol"`                      // Stock ticker.
-	LastTrade  string `json:"regularMarketPrice"`          // l1: last trade.
-	Change     string `json:"regularMarketChange"`         // c6: change real time.
-	ChangePct  string `json:"regularMarketChangePercent"`  // k2: percent change real time.
-	Open       string `json:"regularMarketOpen"`           // o: market open price.
-	Low        string `json:"regularMarketDayLow"`         // g: day's low.
-	High       string `json:"regularMarketDayHigh"`        // h: day's high.
-	Low52      string `json:"fiftyTwoWeekLow"`             // j: 52-weeks low.
-	High52     string `json:"fiftyTwoWeekHigh"`            // k: 52-weeks high.
-	Volume     string `json:"regularMarketVolume"`         // v: volume.
-	AvgVolume  string `json:"averageDailyVolume10Day"`     // a2: average volume.
-	PeRatio    string `json:"trailingPE"`                  // r2: P/E ration real time.
-	PeRatioX   string `json:"trailingPE"`                  // r: P/E ration (fallback when real time is N/A).
-	Dividend   string `json:"trailingAnnualDividendRate"`  // d: dividend.
-	Yield      string `json:"trailingAnnualDividendYield"` // y: dividend yield.
-	MarketCap  string `json:"marketCap"`                   // j3: market cap real time.
-	MarketCapX string `json:"marketCap"`                   // j1: market cap (fallback when real time is N/A).
-	Currency   string `json:"currency"`                    // String code for currency of stock.
-	Direction  int    // -1 when change is < $0, 0 when change is = $0, 1 when change is > $0.
-	PreOpen    string `json:"preMarketChangePercent,omitempty"`
-	AfterHours string `json:"postMarketChangePercent,omitempty"`
+	Ticker              string `json:"symbol"`                              // Stock ticker.
+	LastTrade           string `json:"regularMarketPrice"`                  // l1: last trade.
+	Change              string `json:"regularMarketChange"`                 // c6: change real time.
+	ChangePct           string `json:"regularMarketChangePercent"`          // k2: percent change real time.
+	Open                string `json:"regularMarketOpen"`                   // o: market open price.
+	Low                 string `json:"regularMarketDayLow"`                 // g: day's low.
+	High                string `json:"regularMarketDayHigh"`                // h: day's high.
+	Low52               string `json:"fiftyTwoWeekLow"`                     // j: 52-weeks low.
+	High52              string `json:"fiftyTwoWeekHigh"`                    // k: 52-weeks high.
+	Volume              string `json:"regularMarketVolume"`                 // v: volume.
+	AvgVolume           string `json:"averageDailyVolume10Day"`             // a2: average volume.
+	PeRatio             string `json:"trailingPE"`                          // r2: P/E ration real time.
+	PeRatioX            string `json:"trailingPE"`                          // r: P/E ration (fallback when real time is N/A).
+	Dividend            string `json:"trailingAnnualDividendRate"`          // d: dividend.
+	Yield               string `json:"trailingAnnualDividendYield"`         // y: dividend yield.
+	MarketCap           string `json:"marketCap"`                           // j3: market cap real time.
+	MarketCapX          string `json:"marketCap"`                           // j1: market cap (fallback when real time is N/A).
+	Currency            string `json:"currency"`                            // String code for currency of stock.
+	Direction           int                                                 // -1 when change is < $0, 0 when change is = $0, 1 when change is > $0.
+	PreMarketTrade      string `json:"preMarketPrice,omitempty"`
+	PreMarketChange     string `json:"preMarketChange,omitempty"`
+	PreMarketChangePct  string `json:"preMarketChangePercent,omitempty"`
+	PostMarketTrade     string `json:"postMarketPrice,omitempty"`
+	PostMarketChange    string `json:"postMarketChange,omitempty"`
+	PostMarketChangePct string `json:"postMarketChangePercent,omitempty"`
 }
 
 // Quotes stores relevant pointers as well as the array of stock quotes for
@@ -202,8 +206,12 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 		// TODO calculate rt?
 		quotes.stocks[i].MarketCapX = result["marketCap"]
 		quotes.stocks[i].Currency = result["currency"]
-		quotes.stocks[i].PreOpen = result["preMarketChangePercent"]
-		quotes.stocks[i].AfterHours = result["postMarketChangePercent"]
+		quotes.stocks[i].PreMarketTrade = result["preMarketPrice"]
+		quotes.stocks[i].PreMarketChange = result["preMarketChange"]
+		quotes.stocks[i].PreMarketChangePct = result["preMarketChangePercent"]
+		quotes.stocks[i].PostMarketTrade = result["postMarketPrice"]
+		quotes.stocks[i].PostMarketChange = result["postMarketChange"]
+		quotes.stocks[i].PostMarketChangePct = result["postMarketChangePercent"]
 		/*
 			fmt.Println(i)
 			fmt.Println("-------------------")
@@ -212,6 +220,28 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 			}
 			fmt.Println("-------------------")
 		*/
+		if len(quotes.stocks[i].PreMarketTrade) > 0 {
+			quotes.stocks[i].LastTrade = quotes.stocks[i].PreMarketTrade
+			if s1, err1 := strconv.ParseFloat(quotes.stocks[i].PreMarketChange, 64); err1 == nil {
+				quotes.stocks[i].Change = fmt.Sprintf("%.2f", s1)
+			}
+			if s1, err1 := strconv.ParseFloat(quotes.stocks[i].PreMarketChangePct, 64); err1 == nil {
+				quotes.stocks[i].ChangePct = fmt.Sprintf("%.2f", s1)
+			}
+		}
+		if len(quotes.stocks[i].PostMarketTrade) > 0 {
+			quotes.stocks[i].LastTrade = quotes.stocks[i].PostMarketTrade
+			if s1, err1 := strconv.ParseFloat(quotes.stocks[i].Change, 64); err1 == nil {
+				if s2, err2 := strconv.ParseFloat(quotes.stocks[i].PostMarketChange, 64); err2 == nil {
+					quotes.stocks[i].Change = fmt.Sprintf("%.2f", s1 + s2)
+				}
+			}
+			if s1, err1 := strconv.ParseFloat(quotes.stocks[i].ChangePct, 64); err1 == nil {
+				if s2, err2 := strconv.ParseFloat(quotes.stocks[i].PostMarketChangePct, 64); err2 == nil {
+					quotes.stocks[i].ChangePct = fmt.Sprintf("%.2f", s1 + s2)
+				}
+			}
+		}
 		adv, err := strconv.ParseFloat(quotes.stocks[i].Change, 64)
 		quotes.stocks[i].Direction = 0
 		if err == nil {
