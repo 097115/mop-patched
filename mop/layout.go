@@ -20,7 +20,9 @@ var currencies = map[string]string{
 	"RUB": "₽",
 	"GBP": "£",
 	"GBp": "p",
+	"NOK": "kr",
 	"SEK": "kr",
+	"CHF": "fr",
 	"EUR": "€",
 	"JPY": "¥",
 }
