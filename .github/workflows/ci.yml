@@ -1,0 +1,54 @@
+name: CI
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    name: Deploying ${{ matrix.build_target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build_target: [linux32, linux64]
+        include:
+          - build_target: linux32
+            os: ubuntu-latest
+            artifact_suffix: linux-x86_32
+            target_arch: 386
+            target_os: linux
+          - build_target: linux64
+            os: ubuntu-latest
+            artifact_suffix: linux-x86_64
+            target_arch: amd64
+            target_os: linux
+    steps:
+      - name: Set up access
+        uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+      - name: Set up Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt update
+      - name: Set up Linux32 deps
+        if: matrix.target_arch == '386'
+        run: |
+          sudo apt update
+          sudo apt-get install gcc-multilib
+      - name: Build
+        run: go build -o mop-${{ matrix.artifact_suffix }}
+      - name: Package
+        shell: bash
+        run: |
+          ls -la
+          tar czvf mop-${{ matrix.artifact_suffix }}.tar.gz mop-${{ matrix.artifact_suffix }}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: mop-${{ matrix.artifact_suffix }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
