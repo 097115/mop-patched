@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 	"net/http"
 )
 
@@ -78,7 +79,9 @@ func (market *Market) Fetch() (self *Market) {
 		}
 	}()
 
-	client := http.Client{}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
 	request, err := http.NewRequest("GET", market.url, nil)
 	if err != nil {
 		panic(err)
