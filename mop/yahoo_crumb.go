@@ -6,6 +6,7 @@ package mop
 
 import (
 	"io"
+	"time"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -19,7 +20,9 @@ const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/201
 const euConsentURL = "https://consent.yahoo.com/v2/collectConsent?sessionId="
 
 func fetchCrumb(cookies string) string {
-	client := http.Client{}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
 	request, err := http.NewRequest("GET", crumbURL, nil)
 	if err != nil {
 		panic(err)
@@ -56,7 +59,9 @@ func fetchCrumb(cookies string) string {
 
 func fetchCookies() string {
 
-	client := http.Client{}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
 	var cookies []*http.Cookie
 
 	// Get the session ID from the first request

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -85,7 +86,9 @@ func (quotes *Quotes) Fetch() (self *Quotes) {
 
 		url := fmt.Sprintf(quotesURL, quotes.market.crumb, strings.Join(quotes.profile.Tickers, `,`))
 
-		client := http.Client{}
+		client := http.Client{
+			Timeout: 10 * time.Second,
+		}
 		request, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			panic(err)
