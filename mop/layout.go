@@ -64,7 +64,6 @@ func NewLayout() *Layout {
 		{11, `AvgVolume`, `AvgVolume`, integer},
 		{9, `PeRatio`, `P/E`, blank},
 		{9, `Dividend`, `Dividend`, zero},
-		{9, `Yield`, `Yield`, percent},
 		{11, `MarketCap`, `MktCap`, currency},
 	}
 	layout.regex = regexp.MustCompile(`(\.\d+)[TBMK]?$`)
@@ -83,7 +82,8 @@ func (layout *Layout) Market(market *Market) string {
 
 	highlight(market.Dow, market.Sp500, market.Nasdaq,
 		market.Tokyo, market.HongKong, market.London, market.Frankfurt,
-		market.Yield, market.Oil, market.Euro, market.Yen, market.Gold)
+		market.Yen, market.Rub, market.Gbp, market.Euro,
+		market.Yield, market.Silver, market.Gold)
 	buffer := new(bytes.Buffer)
 	layout.marketTemplate.Execute(buffer, market)
 
@@ -226,9 +226,10 @@ func (layout *Layout) pad(str string, width int) string {
 
 // -----------------------------------------------------------------------------
 func buildMarketTemplate() *template.Template {
-	markup := `<tag>Dow</> {{.Dow.change}} ({{.Dow.percent}}) at {{.Dow.latest}} <tag>S&P 500</> {{.Sp500.change}} ({{.Sp500.percent}}) at {{.Sp500.latest}} <tag>NASDAQ</> {{.Nasdaq.change}} ({{.Nasdaq.percent}}) at {{.Nasdaq.latest}}
-<tag>Tokyo</> {{.Tokyo.change}} ({{.Tokyo.percent}}) at {{.Tokyo.latest}} <tag>HK</> {{.HongKong.change}} ({{.HongKong.percent}}) at {{.HongKong.latest}} <tag>London</> {{.London.change}} ({{.London.percent}}) at {{.London.latest}} <tag>Frankfurt</> {{.Frankfurt.change}} ({{.Frankfurt.percent}}) at {{.Frankfurt.latest}} {{if .IsClosed}}<right>U.S. markets closed</right>{{end}}
-<tag>10-Year Yield</> {{.Yield.latest}} ({{.Yield.change}}) <tag>Euro</> ${{.Euro.latest}} ({{.Euro.change}}) <tag>Yen</> ¥{{.Yen.latest}} ({{.Yen.change}}) <tag>Oil</> ${{.Oil.latest}} ({{.Oil.change}}) <tag>Gold</> ${{.Gold.latest}} ({{.Gold.change}})`
+	markup := `<tag>Dow:</> {{.Dow.change}} ({{.Dow.percent}}) at {{.Dow.latest}} <tag>S&P 500:</> {{.Sp500.change}} ({{.Sp500.percent}}) at {{.Sp500.latest}} <tag>NASDAQ:</> {{.Nasdaq.change}} ({{.Nasdaq.percent}}) at {{.Nasdaq.latest}}
+<tag>Tokyo:</> {{.Tokyo.change}} ({{.Tokyo.percent}}) at {{.Tokyo.latest}} <tag>HK:</> {{.HongKong.change}} ({{.HongKong.percent}}) at {{.HongKong.latest}} <tag>London:</> {{.London.change}} ({{.London.percent}}) at {{.London.latest}} <tag>Frankfurt:</> {{.Frankfurt.change}} ({{.Frankfurt.percent}}) at {{.Frankfurt.latest}} {{if .IsClosed}}<right>U.S. markets closed</right>{{end}}
+<tag>$/Yen:</> {{.Yen.change}} ({{.Yen.percent}}) at ¥{{.Yen.latest}} <tag>$/Ruble:</> {{.Rub.change}} ({{.Rub.percent}}) at ₽{{.Rub.latest}} <tag>$/Pound:</> {{.Gbp.change}} ({{.Gbp.percent}}) at £{{.Gbp.latest}} <tag>$/Euro:</> {{.Euro.change}} ({{.Euro.percent}}) at €{{.Euro.latest}}
+<tag>10-Year Yield:</> {{.Yield.change}} ({{.Yield.percent}}) at {{.Yield.latest}} <tag>Silver:</> {{.Silver.change}} ({{.Silver.percent}}) at ${{.Silver.latest}} <tag>Gold:</> {{.Gold.change}} ({{.Gold.percent}}) at ${{.Gold.latest}}`
 
 	return template.Must(template.New(`market`).Parse(markup))
 }
@@ -239,8 +240,9 @@ func buildQuotesTemplate() *template.Template {
 
 
 
+
 <header>{{.Header}}</>
-{{range.Stocks}}{{if eq .Direction 1}}<gain>{{else if eq .Direction -1}}<loss>{{end}}{{.Ticker}}{{.LastTrade}}{{.Change}}{{.ChangePct}}{{.Open}}{{.Low}}{{.High}}{{.Low52}}{{.High52}}{{.Volume}}{{.AvgVolume}}{{.PeRatio}}{{.Dividend}}{{.Yield}}{{.MarketCap}}</>
+{{range.Stocks}}{{if eq .Direction 1}}<gain>{{else if eq .Direction -1}}<loss>{{end}}{{.Ticker}}{{.LastTrade}}{{.Change}}{{.ChangePct}}{{.Open}}{{.Low}}{{.High}}{{.Low52}}{{.High52}}{{.Volume}}{{.AvgVolume}}{{.PeRatio}}{{.Dividend}}{{.MarketCap}}</>
 {{end}}`
 
 	return template.Must(template.New(`quotes`).Parse(markup))
@@ -253,12 +255,19 @@ func highlight(collections ...map[string]string) {
 		if change[len(change)-1:] == `%` {
 			change = change[0 : len(change)-1]
 		}
-		adv, err := strconv.ParseFloat(change, 64)
-		if err == nil {
-			if adv < 0.0 {
+		percent := collection[`percent`]
+		if percent[len(percent)-1:] == `%` {
+			percent = percent[0 : len(percent)-1]
+		}
+		adv1, err1 := strconv.ParseFloat(change, 64)
+		adv2, err2 := strconv.ParseFloat(percent, 64)
+		if err1 == nil && err2 == nil {
+			if adv1 < 0.0 || adv2 < 0.0{
 				collection[`change`] = `<loss>` + collection[`change`] + `</>`
-			} else if adv > 0.0 {
+				collection[`percent`] = `<loss>` + collection[`percent`] + `</>`
+			} else if adv2 > 0.0 || adv2 > 0 {
 				collection[`change`] = `<gain>` + collection[`change`] + `</>`
+				collection[`percent`] = `<gain>` + collection[`percent`] + `</>`
 			}
 		}
 	}

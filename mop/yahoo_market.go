@@ -26,8 +26,10 @@ type Market struct {
 	London    map[string]string
 	Frankfurt map[string]string
 	Yield     map[string]string
-	Oil       map[string]string
+	Silver    map[string]string
 	Yen       map[string]string
+	Rub       map[string]string
+	Gbp       map[string]string
 	Euro      map[string]string
 	Gold      map[string]string
 	errors    string // Error(s), if any.
@@ -50,14 +52,14 @@ func NewMarket() *Market {
 	market.Frankfurt = make(map[string]string)
 
 	market.Yield = make(map[string]string)
-	market.Oil = make(map[string]string)
+	market.Silver = make(map[string]string)
 	market.Yen = make(map[string]string)
 	market.Euro = make(map[string]string)
 	market.Gold = make(map[string]string)
 
 	market.cookies = fetchCookies()
 	market.crumb = fetchCrumb(market.cookies)
-	market.url = fmt.Sprintf(marketURL, market.crumb, `^DJI,^IXIC,^GSPC,^N225,^HSI,^FTSE,^GDAXI,^TNX,CL=F,JPY=X,EUR=X,GC=F`) + marketURLQueryParts
+	market.url = fmt.Sprintf(marketURL, market.crumb, `^DJI,^IXIC,^GSPC,^N225,^HSI,^FTSE,^GDAXI,JPY=X,RUB=X,GBP=X,EUR=X,^TNX,SI=F,GC=F`) + marketURLQueryParts
 
 	market.errors = ``
 
@@ -133,7 +135,7 @@ func assign(results []map[string]interface{}, position int, changeAsPercent bool
 	if changeAsPercent {
 		out[`change`] = float2Str(results[position]["regularMarketChangePercent"].(float64)) + `%`
 	} else {
-		out[`percent`] = float2Str(results[position]["regularMarketChangePercent"].(float64))
+		out[`percent`] = float2Str(results[position]["regularMarketChangePercent"].(float64)) + `%`
 	}
 	return out
 }
@@ -153,13 +155,15 @@ func (market *Market) extract(body []byte) *Market {
 	market.HongKong = assign(results, 4, false)
 	market.London = assign(results, 5, false)
 	market.Frankfurt = assign(results, 6, false)
-	market.Yield[`name`] = `10-year Yield`
-	market.Yield = assign(results, 7, false)
 
-	market.Oil = assign(results, 8, true)
-	market.Yen = assign(results, 9, true)
-	market.Euro = assign(results, 10, true)
-	market.Gold = assign(results, 11, true)
+	market.Yen = assign(results, 7, false)
+	market.Rub = assign(results, 8, false)
+	market.Gbp = assign(results, 9, false)
+	market.Euro = assign(results, 10, false)
+	market.Yield[`name`] = `10-year Yield`
+	market.Yield = assign(results, 11, false)
+	market.Silver = assign(results, 12, false)
+	market.Gold = assign(results, 13, false)
 
 	return market
 }

@@ -295,12 +295,13 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 				}
 			}
 		}
-		adv, err := strconv.ParseFloat(quotes.stocks[i].Change, 64)
+		adv1, err1 := strconv.ParseFloat(quotes.stocks[i].Change, 64)
+		adv2, err2 := strconv.ParseFloat(quotes.stocks[i].ChangePct, 64)
 		quotes.stocks[i].Direction = 0
-		if err == nil {
-			if adv < 0.0 {
+		if err1 == nil && err2 == nil {
+			if adv1 < 0.0 || adv2 < 0.0 {
 				quotes.stocks[i].Direction = -1
-			} else if adv > 0.0 {
+			} else if adv1 > 0.0 || adv2 > 0.0 {
 				quotes.stocks[i].Direction = 1
 			}
 		}
