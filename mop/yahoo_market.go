@@ -73,9 +73,7 @@ func (market *Market) Fetch() (self *Market) {
 	self = market // <-- This ensures we return correct market after recover() from panic().
 	defer func() {
 		if err := recover(); err != nil {
-			market.errors = fmt.Sprintf("Error fetching market data...\n%s", err)
-		} else {
-			market.errors = ""
+			market.errors = "" // Don't pollute the screen
 		}
 	}()
 
