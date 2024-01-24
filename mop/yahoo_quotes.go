@@ -184,8 +184,37 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 			default:
 				result[k] = fmt.Sprintf("%v", v)
 			}
-
 		}
+
+		// rename special tickers
+		if strings.Contains(result["symbol"], "=") || strings.Contains(result["symbol"], "-") {
+			// currencies
+			if result["symbol"][3:] == "=X" {
+				result["symbol"] = "USD" + result["symbol"]
+			}
+			switch {
+			case strings.Contains(result["symbol"], "-USD"),
+				strings.Contains(result["symbol"], "-EUR"):
+				result["symbol"] = "$" + result["symbol"]
+			case strings.HasSuffix(result["symbol"], "=X"):
+				result["symbol"] = result["symbol"][:len(result["symbol"]) - 2]
+				result["symbol"] = "$" + result["symbol"][:3] + "-" + result["symbol"][3:]
+			// futures
+			case strings.HasSuffix(result["symbol"], "=F"):
+				result["symbol"] = "*" + result["symbol"]
+			default:
+			}
+		}
+		switch {
+		// some ETFs
+		case result["symbol"] == "DIA",			// SDPR Dow Jones Industrial Average ETF
+			result["symbol"] == "IWM", 			// iShares Russell 2000 ETF
+			result["symbol"] == "QQQ", 			// Invesco QQQ ETF
+			result["symbol"] == "SPY", 			// SPDR S&P 500 ETF
+			result["symbol"] == "XLRE": 		// SDPR Real Estate ETF
+			result["symbol"] = "#" + result["symbol"]
+		}
+
 		quotes.stocks[i].Ticker = result["symbol"]
 		quotes.stocks[i].LastTrade = result["regularMarketPrice"]
 		quotes.stocks[i].Change = result["regularMarketChange"]
