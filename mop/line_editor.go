@@ -218,6 +218,6 @@ func (editor *LineEditor) done() bool {
 // Split by whitespace/comma to convert a string to array of tickers. Make sure
 // the string is trimmed to avoid empty tickers in the array.
 func (editor *LineEditor) tokenize() []string {
-	input := strings.ToUpper(strings.Trim(editor.input, `, `))
+	input := strings.Trim(editor.input, `, `)
 	return editor.regex.Split(input, -1)
 }

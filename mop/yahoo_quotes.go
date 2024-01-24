@@ -161,6 +161,16 @@ func (quotes *Quotes) isReady() bool {
 	return (quotes.stocks == nil || !quotes.market.IsClosed) && len(quotes.profile.Tickers) > 0
 }
 
+// stringInSlice returns true if a string is present in a slice, and false otherwise
+func stringInSlice(a string, list []string) bool {
+    for _, b := range list {
+        if b == a {
+            return true
+        }
+    }
+    return false
+}
+
 // this will parse the json objects
 func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 	// response -> quoteResponse -> result|error (array) -> map[string]interface{}
@@ -187,6 +197,12 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 			default:
 				result[k] = fmt.Sprintf("%v", v)
 			}
+		}
+
+		// allow lowercase tickers
+		// (to visually distinguish between held and watched tickers, for instance)
+		if ! stringInSlice(result["symbol"], quotes.profile.Tickers) && stringInSlice(strings.ToLower(result["symbol"]), quotes.profile.Tickers) {
+			result["symbol"] = strings.ToLower(result["symbol"])
 		}
 
 		// rename special tickers
