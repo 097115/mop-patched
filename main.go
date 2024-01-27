@@ -39,7 +39,7 @@ NO WARRANTIES OF ANY KIND WHATSOEVER. SEE THE LICENSE FILE FOR DETAILS.
    Up/Down arrows     Scroll up
    j J                Scroll up
    k K                Scroll down
-   q esc              Quit mop
+   q                  Quit mop
 
 Enter comma-delimited list of stock tickers when prompted.
 
@@ -84,7 +84,7 @@ loop:
 			switch event.Type {
 			case termbox.EventKey:
 				if lineEditor == nil && columnEditor == nil && !showingHelp {
-					if event.Key == termbox.KeyEsc || event.Ch == 'q' || event.Ch == 'Q' {
+					if event.Ch == 'q' || event.Ch == 'Q' {
 						break loop
 					} else if event.Ch == '+' || event.Ch == '-' {
 						lineEditor = mop.NewLineEditor(screen, quotes)
