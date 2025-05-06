@@ -22,6 +22,7 @@ type Market struct {
 	Dow       map[string]string // Hash of Dow Jones indicators.
 	Nasdaq    map[string]string // Hash of NASDAQ indicators.
 	Sp500     map[string]string // Hash of S&P 500 indicators.
+	Btc       map[string]string
 	Tokyo     map[string]string
 	HongKong  map[string]string
 	London    map[string]string
@@ -46,6 +47,7 @@ func NewMarket() *Market {
 	market.Dow = make(map[string]string)
 	market.Nasdaq = make(map[string]string)
 	market.Sp500 = make(map[string]string)
+	market.Btc = make(map[string]string)
 
 	market.Tokyo = make(map[string]string)
 	market.HongKong = make(map[string]string)
@@ -60,7 +62,7 @@ func NewMarket() *Market {
 
 	market.cookies = fetchCookies()
 	market.crumb = fetchCrumb(market.cookies)
-	market.url = fmt.Sprintf(marketURL, market.crumb, `^DJI,^IXIC,^GSPC,^N225,^HSI,^FTSE,^GDAXI,JPY=X,RUB=X,GBP=X,EUR=X,^TNX,SI=F,GC=F`) + marketURLQueryParts
+	market.url = fmt.Sprintf(marketURL, market.crumb, `^DJI,^IXIC,^GSPC,BTC-USD,^N225,^HSI,^FTSE,^GDAXI,JPY=X,RUB=X,GBP=X,EUR=X,^TNX,SI=F,GC=F`) + marketURLQueryParts
 
 	market.errors = ``
 
@@ -152,19 +154,20 @@ func (market *Market) extract(body []byte) *Market {
 	market.Dow = assign(results, 0, false)
 	market.Nasdaq = assign(results, 1, false)
 	market.Sp500 = assign(results, 2, false)
-	market.Tokyo = assign(results, 3, false)
-	market.HongKong = assign(results, 4, false)
-	market.London = assign(results, 5, false)
-	market.Frankfurt = assign(results, 6, false)
+	market.Btc = assign(results, 3, false)
+	market.Tokyo = assign(results, 4, false)
+	market.HongKong = assign(results, 5, false)
+	market.London = assign(results, 6, false)
+	market.Frankfurt = assign(results, 7, false)
 
-	market.Yen = assign(results, 7, false)
-	market.Rub = assign(results, 8, false)
-	market.Gbp = assign(results, 9, false)
-	market.Euro = assign(results, 10, false)
+	market.Yen = assign(results, 8, false)
+	market.Rub = assign(results, 9, false)
+	market.Gbp = assign(results, 10, false)
+	market.Euro = assign(results, 11, false)
 	market.Yield[`name`] = `10-year Yield`
-	market.Yield = assign(results, 11, false)
-	market.Silver = assign(results, 12, false)
-	market.Gold = assign(results, 13, false)
+	market.Yield = assign(results, 12, false)
+	market.Silver = assign(results, 13, false)
+	market.Gold = assign(results, 14, false)
 
 	return market
 }

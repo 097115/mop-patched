@@ -80,7 +80,7 @@ func (layout *Layout) Market(market *Market) string {
 		return err // then simply return the error string.
 	}
 
-	highlight(market.Dow, market.Sp500, market.Nasdaq,
+	highlight(market.Dow, market.Sp500, market.Nasdaq, market.Btc,
 		market.Tokyo, market.HongKong, market.London, market.Frankfurt,
 		market.Yen, market.Rub, market.Gbp, market.Euro,
 		market.Yield, market.Silver, market.Gold)
@@ -226,7 +226,7 @@ func (layout *Layout) pad(str string, width int) string {
 
 // -----------------------------------------------------------------------------
 func buildMarketTemplate() *template.Template {
-	markup := `<tag>Dow:</> {{.Dow.change}} ({{.Dow.percent}}) @ {{.Dow.latest}} <tag>S&P 500:</> {{.Sp500.change}} ({{.Sp500.percent}}) @ {{.Sp500.latest}} <tag>NASDAQ:</> {{.Nasdaq.change}} ({{.Nasdaq.percent}}) @ {{.Nasdaq.latest}}<tag>          </>
+	markup := `<tag>Dow:</> {{.Dow.change}} ({{.Dow.percent}}) @ {{.Dow.latest}} <tag>S&P 500:</> {{.Sp500.change}} ({{.Sp500.percent}}) @ {{.Sp500.latest}} <tag>NASDAQ:</> {{.Nasdaq.change}} ({{.Nasdaq.percent}}) @ {{.Nasdaq.latest}}<tag> <tag>₿:</> {{.Btc.change}} ({{.Btc.percent}}) @ {{.Btc.latest}}        </>
 <tag>Tokyo:</> {{.Tokyo.change}} ({{.Tokyo.percent}}) @ {{.Tokyo.latest}} <tag>HK:</> {{.HongKong.change}} ({{.HongKong.percent}}) @ {{.HongKong.latest}} <tag>London:</> {{.London.change}} ({{.London.percent}}) @ {{.London.latest}} <tag>FaM:</> {{.Frankfurt.change}} ({{.Frankfurt.percent}}) @ {{.Frankfurt.latest}} {{if .IsClosed}}<right>U.S. markets closed</right>{{end}}<tag>          </>
 <tag>$/Yen:</> {{.Yen.change}} ({{.Yen.percent}}) @ ¥{{.Yen.latest}} <tag>$/Ruble:</> {{.Rub.change}} ({{.Rub.percent}}) @ ₽{{.Rub.latest}} <tag>$/Pound:</> {{.Gbp.change}} ({{.Gbp.percent}}) @ £{{.Gbp.latest}} <tag>$/Euro:</> {{.Euro.change}} ({{.Euro.percent}}) @ €{{.Euro.latest}}<tag>          </>
 <tag>10-Year Yield:</> {{.Yield.change}} ({{.Yield.percent}}) @ {{.Yield.latest}} <tag>Silver:</> {{.Silver.change}} ({{.Silver.percent}}) @ ${{.Silver.latest}} <tag>Gold:</> {{.Gold.change}} ({{.Gold.percent}}) @ ${{.Gold.latest}}<tag>          </>`
